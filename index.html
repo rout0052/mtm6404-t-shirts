@@ -4,6 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>T-Shirts</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .shirt-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+
+      gap: 20px;
+    }
+
+    .shirt {
+      max-width: 400px;
+    }
+
+    .shirt img {
+      width: 100%;
+    }
+
+    .action-items {
+      font-size: 18px;
+    }
+    .action-items button {
+      background-color: #333;
+      color: white;
+      font-size: inherit;
+      border-radius: 0px 8px 8px 0px;
+      padding: 4px 20px;
+      border: none;
+    }
+
+    .action-items select {
+      font-size: inherit;
+      border-radius: 8px 0px 0px 8px;
+      border: none;
+      padding: 4px 30px;
+    }
+
+    .action-items option {
+      border: none;
+    }
+  </style>
+
 </head>
 <body>
   <div id="root"></div>
@@ -19,18 +68,70 @@
       </script>
 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
 
     <script type="text/babel" data-type="module">
       import React, { useState } from "react";
       import ReactDOM from "react-dom/client";
-  
+      import tshirts from './t-shirts.js';
+ 
+
       const root = ReactDOM.createRoot(document.getElementById("root"));
+
+      
+
+      // Each t-shirt should be displayed with the title, image, price, and the number of remaining stock. ✅
+
+      // If the remaining stock is 0, then the term "Out of Stock" should be displayed.✅
+
+      // A "buy" button and "quantity" select box should appear for those t-shirts with a stock above 0.
+
+      // The select box should allow the user to select the number of t-shirts to buy. The user should not be able to select more than the available stock.
+
+      // Clicking on the "buy" button should decrease the respective t-shirt's stock by the quantity selected.
+
+      const Shirt = ({ shirt }) => {
+        const stockAvailable = shirt.stock > 0;
+               
+
+        const buyHandler = (quantity) => {
+
+        };
+
+        
+        return (
+            <div className="shirt">
+              <img src={`images/${shirt.image}`} alt={shirt.title}/>
+              <h3>{shirt.title}</h3>
+              <p className="shirt-price">${shirt.price}</p>
+              <p className="shirt-stock">{stockAvailable ? `${shirt.stock} left!`: `Out of stock.`}</p>
+
+              
+              <div className="action-items">
+                <select name="quantity" id="quantity">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+
+                <button type="button" onClick={buyHandler()}>Buy</button>
+
+              </div>
+            </div>
+        )
+      }
 
       const App = () => {
         return (
-            <div>
-                Hello from React 19
+          <>
+            <h1>T-Shirts</h1>
+
+            <div className="shirt-container">
+                {tshirts.map(shirt => <Shirt shirt={shirt}/>)}
+                
             </div>
+          
+          </>
         );
       };
 
