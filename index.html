@@ -17,7 +17,7 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-
+      margin-bottom: 40px;
       gap: 20px;
     }
 
@@ -37,10 +37,11 @@
       color: white;
       font-size: inherit;
       border-radius: 0px 8px 8px 0px;
-      padding: 4px 20px;
+      padding:4px 20px;
+      cursor: pointer;
       border: none;
     }
-
+    
     .action-items select {
       font-size: inherit;
       border-radius: 8px 0px 0px 8px;
@@ -50,6 +51,11 @@
 
     .action-items option {
       border: none;
+    }
+
+    .shirt-stock.no-stock {
+      color: red;
+      font-weight: bold;
     }
   </style>
 
@@ -71,57 +77,86 @@
     
 
     <script type="text/babel" data-type="module">
-      import React, { useState } from "react";
+      import React, { useState, useEffect } from "react";
       import ReactDOM from "react-dom/client";
       import tshirts from './t-shirts.js';
  
 
       const root = ReactDOM.createRoot(document.getElementById("root"));
-
-      
+      // Things for Leighton: Is the onClick for the button right nested inside an arrow function? How tf do I get the options to show the right amount - for loop doesn't work, neither does a template array. I've done it in the stupidest possible way, is this stupid???? Is the ternary the proper way add things? Local storage necessary? I know im not supposed to update the t-shirts file, but I added an export statement, was that how I was supposed to do that?
 
       // Each t-shirt should be displayed with the title, image, price, and the number of remaining stock. ✅
 
       // If the remaining stock is 0, then the term "Out of Stock" should be displayed.✅
 
-      // A "buy" button and "quantity" select box should appear for those t-shirts with a stock above 0.
+      // A "buy" button and "quantity" select box should appear for those t-shirts with a stock above 0. ✅
 
-      // The select box should allow the user to select the number of t-shirts to buy. The user should not be able to select more than the available stock.
+      // The select box should allow the user to select the number of t-shirts to buy. The user should not be able to select more than the available stock. ✅
 
-      // Clicking on the "buy" button should decrease the respective t-shirt's stock by the quantity selected.
+      // Clicking on the "buy" button should decrease the respective t-shirt's stock by the quantity selected.✅
 
       const Shirt = ({ shirt }) => {
-        const stockAvailable = shirt.stock > 0;
-               
+        const [shirtStock, setShirtStock] = useState(shirt.stock);
+        const [isStockAvailable, setStockAvailability] = useState(shirt.stock > 0);
+        let quantitySelected = 1;
 
-        const buyHandler = (quantity) => {
+        let optionAmount = [];
+        for(let i = 0; i < shirt.stock; i++) {
+          optionAmount.push(i+1);
+        }
 
+        const buyHandler = (purchased) => {
+            setShirtStock(shirt.stock -= purchased);
+            if(shirt.stock > 0) {
+              updateOptionAmount(shirt.stock);
+            } else {
+              setStockAvailability(false);
+            }
         };
 
+        useEffect(() => {
+          setShirtStock(shirt.stock);
+        }, [shirt.stock]);
+
+        useEffect(() => {
+          setStockAvailability(shirt.stock > 0);
+        }, [isStockAvailable]);
+
+
+        const updateOptionAmount = (remainingStock) => {
+          optionAmount = optionAmount.slice(0, remainingStock);
+          console.log(optionAmount);
+        }
         
+        // In the onClick for the button, I wrapped the function inside of an arrow function after reading this article from Medium by Fslunsky: https://medium.com/@fslunsky/reacts-event-handling-why-your-onclick-isn-t-clicking-1c136a0f3f7b  
         return (
             <div className="shirt">
               <img src={`images/${shirt.image}`} alt={shirt.title}/>
               <h3>{shirt.title}</h3>
               <p className="shirt-price">${shirt.price}</p>
-              <p className="shirt-stock">{stockAvailable ? `${shirt.stock} left!`: `Out of stock.`}</p>
-
+              {isStockAvailable ? 
+                <p className="shirt-stock">{shirt.stock} left!</p> 
+                : <p className="shirt-stock no-stock">Out of Stock</p>
+              }
               
-              <div className="action-items">
-                <select name="quantity" id="quantity">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
+              {isStockAvailable ?
+                <div className="action-items">
+                <select name="quantity" id="quantity" onChange={(e) => {quantitySelected = parseInt(e.target.value)}}>
+                  {optionAmount.map((option) => <option value={option}>{option}</option>)}
                 </select>
 
-                <button type="button" onClick={buyHandler()}>Buy</button>
+                
+                <button type="button" onClick={() => buyHandler(quantitySelected)}>Buy</button>
 
-              </div>
+              </div> : '' }
+              
             </div>
         )
       }
 
       const App = () => {
+        
+
         return (
           <>
             <h1>T-Shirts</h1>
