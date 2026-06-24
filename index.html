@@ -29,6 +29,9 @@
       width: 100%;
     }
 
+    .shirt .shirt-price {
+      font-weight: bold;
+    }
     .action-items {
       font-size: 18px;
     }
@@ -75,88 +78,79 @@
 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-
+    <!-- Adds the t-shirts.js data file to the document -->
+    <script src="t-shirts.js"></script>
+      
     <script type="text/babel" data-type="module">
+      // imports React and sets up the root div 
       import React, { useState, useEffect } from "react";
       import ReactDOM from "react-dom/client";
-      import tshirts from './t-shirts.js';
- 
-
       const root = ReactDOM.createRoot(document.getElementById("root"));
-      // Things for Leighton: Is the onClick for the button right nested inside an arrow function? How tf do I get the options to show the right amount - for loop doesn't work, neither does a template array. I've done it in the stupidest possible way, is this stupid???? Is the ternary the proper way add things? Local storage necessary? I know im not supposed to update the t-shirts file, but I added an export statement, was that how I was supposed to do that?
 
-      // Each t-shirt should be displayed with the title, image, price, and the number of remaining stock. ✅
-
-      // If the remaining stock is 0, then the term "Out of Stock" should be displayed.✅
-
-      // A "buy" button and "quantity" select box should appear for those t-shirts with a stock above 0. ✅
-
-      // The select box should allow the user to select the number of t-shirts to buy. The user should not be able to select more than the available stock. ✅
-
-      // Clicking on the "buy" button should decrease the respective t-shirt's stock by the quantity selected.✅
+      
 
       const Shirt = ({ shirt }) => {
-        const [shirtStock, setShirtStock] = useState(shirt.stock);
-        const [isStockAvailable, setStockAvailability] = useState(shirt.stock > 0);
+        // Sets default shirtStock state to shirt.stock. This will be updated throughout. Used let instead of const because the shirtStock amount changes throughout
+        let [shirtStock, setShirtStock] = useState(shirt.stock);
+        // Boolean for whether there is presently stock available, which gets updated once the shirtStock=0
+        const [isStockAvailable, setStockAvailability] = useState(shirtStock > 0);
+
+        // Creates the options for the dropdown. Starts with the spread operator and Array() method to create an array with a length equal to the shirt stock, then filling by using the keys() method, which gets the index of each slot. Since we need an array that will hold whole numbers going up to the amount of options, these index numbers are nearly what we need in this array. I split the map into two maps for readability. To get the numbers to begin at 1, we can map the array to add one to each number. Finally, we map the array to HTML tags using the map method, using the number for the value, key, and inner content of the tag. This will update with the useEffect for shirtStock, preventing the user from adding more shirts to cart than available stock. Then, within the actual return, it just calls this variable directly.
+        const options = [ ...Array(shirtStock).keys()].map( i => ++i).map(num => (<option value={num} key={num}>{num}</option>));
+
+        // Sets the default quantity of t-shirts to buy as 1. This will change when the user changes the select amount, which will then be used by the buyHandler
         let quantitySelected = 1;
 
-        let optionAmount = [];
-        for(let i = 0; i < shirt.stock; i++) {
-          optionAmount.push(i+1);
-        }
-
+        // Function to handle the buy button being click. It takes the number of purchased shirts as a parameter.
         const buyHandler = (purchased) => {
-            setShirtStock(shirt.stock -= purchased);
-            if(shirt.stock > 0) {
-              updateOptionAmount(shirt.stock);
-            } else {
+            // Sets the new stock as the current shirtStock minus the amount purchased.
+            setShirtStock(shirtStock -= purchased);
+            
+            // If the new shirtStock is 0 (or less, just as a fallback if there is an error in the options menu that allows the user to buy more than the remaining stock)
+            if(shirtStock <= 0) {
+              // Set the new stock availability to false, which changes the text to say "Out of Stock." and removes the buy buttons.
               setStockAvailability(false);
             }
         };
 
+        // Monitors the shirtStock value, and executes this code when any changes are made
         useEffect(() => {
-          setShirtStock(shirt.stock);
-        }, [shirt.stock]);
+          // Sets the shirtStock throughout the component.
+          setShirtStock(shirtStock);
+        }, [shirtStock]);
 
-        useEffect(() => {
-          setStockAvailability(shirt.stock > 0);
-        }, [isStockAvailable]);
-
-
-        const updateOptionAmount = (remainingStock) => {
-          optionAmount = optionAmount.slice(0, remainingStock);
-          console.log(optionAmount);
-        }
-        
-        // In the onClick for the button, I wrapped the function inside of an arrow function after reading this article from Medium by Fslunsky: https://medium.com/@fslunsky/reacts-event-handling-why-your-onclick-isn-t-clicking-1c136a0f3f7b  
+        // Returns the shirt component.
+        // I used the ternary operator to conditionally render the shirt-stock paragraph, as well as the action-items div, according to whether stock is available or not.
+        // For the select tag, I used the value onChange to update the quantitySelected value. It has to be parsed to an integer first however, to still be able to subtract from the remainingStock in the buyHandler
+        // The buyHandler function was nested inside an arrow function to allow me to pass an parameter through it. I could have nested it in a function above, but given the basic nature of this application, I found it unnecessary. 
         return (
             <div className="shirt">
               <img src={`images/${shirt.image}`} alt={shirt.title}/>
               <h3>{shirt.title}</h3>
               <p className="shirt-price">${shirt.price}</p>
               {isStockAvailable ? 
-                <p className="shirt-stock">{shirt.stock} left!</p> 
+                <p className="shirt-stock">{shirtStock} left!</p> 
                 : <p className="shirt-stock no-stock">Out of Stock</p>
               }
               
               {isStockAvailable ?
                 <div className="action-items">
                 <select name="quantity" id="quantity" onChange={(e) => {quantitySelected = parseInt(e.target.value)}}>
-                  {optionAmount.map((option) => <option value={option}>{option}</option>)}
+                  {options}
                 </select>
 
                 
                 <button type="button" onClick={() => buyHandler(quantitySelected)}>Buy</button>
 
-              </div> : '' }
+                </div> : '' 
+              }
               
             </div>
         )
       }
 
       const App = () => {
-        
-
+        // Adds the app inside of a React fragment to include an h1 without adding an additional unnecessary div. Inside the shirt-container div, I map each of the shirts in the t-shirts dataset to a <Shirt /> component.
         return (
           <>
             <h1>T-Shirts</h1>
