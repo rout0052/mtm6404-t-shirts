@@ -99,7 +99,7 @@
         const options = [ ...Array(shirtStock).keys()].map( i => ++i).map(num => (<option value={num} key={num}>{num}</option>));
 
         // Sets the default quantity of t-shirts to buy as 1. This will change when the user changes the select amount, which will then be used by the buyHandler
-        let quantitySelected = 1;
+        const [quantitySelected, setSelectedQuantity] = useState(1);
 
         // Function to handle the buy button being click. It takes the number of purchased shirts as a parameter.
         const buyHandler = (purchased) => {
@@ -117,6 +117,8 @@
         useEffect(() => {
           // Sets the shirtStock throughout the component.
           setShirtStock(shirtStock);
+          // Resets the selected quantity to 1.
+          setSelectedQuantity(1);
         }, [shirtStock]);
 
         // Returns the shirt component.
@@ -135,7 +137,7 @@
               
               {isStockAvailable ?
                 <div className="action-items">
-                <select name="quantity" id="quantity" onChange={(e) => {quantitySelected = parseInt(e.target.value)}}>
+                <select name="quantity" id="quantity" value={quantitySelected} onChange={(e) => {setSelectedQuantity(parseInt(e.target.value))}}>
                   {options}
                 </select>
 
